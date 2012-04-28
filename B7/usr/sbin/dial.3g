@@ -1,0 +1,382 @@
+#!/bin/sh
+ppp_conf="/etc/ppp/setup.cfg"
+for i in $(seq 7); do
+	eval usb$i=`grep $i= /etc/ppp/ttyUSBMap|cut -d= -f2`
+done
+
+call_pppd_manual() {
+	eval usb="$"usb$1
+	index=`find /sys/devices/pci0000:00|grep -n "$usb/ttyUSB[0-9]*$"|awk -F "ttyUSB" '{print $2}'`	
+	if [ -n "$index" ]; then
+		script=`grep standard$1= $ppp_conf|cut -d= -f2`
+		if [ "$script" != "" ]; then
+			pppd=`ps|egrep "pppd call $script$1"|grep -v "grep" -c`
+			if [ $pppd == 0 ]; then
+				sn=`grep service_number$1= $ppp_conf|cut -d= -f2`
+				apn=`grep apn$1= $ppp_conf|cut -d= -f2`
+				username=`grep username$1= $ppp_conf|cut -d= -f2`
+				passwd=`grep password$1= $ppp_conf|cut -d= -f2`
+				case $script in
+				'wcdma')
+					sed -i "s/ATDT.*/ATDT$sn\"/g" /etc/ppp/chat-$script$1
+				;;
+				'evdo')
+					sed -i "s/ATD.*/ATD$sn/g" /etc/ppp/chat-$script$1
+				;;
+				esac
+				sed -i "s/\"IP\",\".*\",,0,0/\"IP\",\"$apn\",,0,0/g" /etc/ppp/chat-$script$1
+				sed -i "s/^user \".*\"/user \"$username\"/g" /etc/ppp/peers/$script$1
+				sed -i "s/^password \".*\"/password \"$passwd\"/g" /etc/ppp/peers/$script$1
+				sed -i "s/ttyUSB.*/ttyUSB$index/g" /etc/ppp/peers/$script$1
+				pppd call $script$1
+			fi
+		fi
+	fi
+}
+
+call_pppd_auto() {
+	index=`find /sys/devices/pci0000:00|grep -n ":1.0/ttyUSB[0-9]*$"|sed -n ${1}p|awk -F "ttyUSB" '{print $2}'`
+	pppd=`ps|egrep "pppd call wcdma$index.tmp|pppd call evdo$index.tmp"|grep -v "grep" -c`
+	if [ $pppd == 0 ]; then
+		offset=2
+		usbno=$(expr $index '+' $offset) 
+		imic=`/usr/sbin/readIMSI -p /dev/ttyUSB$usbno`
+		opindex=`echo $imic|cut -c5-5`
+		if [ "$opindex" == "" ]; then
+		   offset=3
+		   usbno=$(expr $index '+' $offset)
+		   imic=`/usr/sbin/readIMSI -p /dev/ttyUSB$usbno`
+		   opindex=`echo $imic|cut -c5-5`
+		fi 
+		script='wcdma'
+		if [ "$opindex" == '1' ] || [ "$opindex" == '3' ]; then
+			case $opindex in
+		        '1')
+		        	script='wcdma'
+		        ;;
+		        '3')
+		        	script='evdo'
+		        ;;
+		        esac
+		fi
+		if [ "$script" != "" ]; then
+			pppd=`cat /etc/ppp/peers/$script|sed "s/ttyUSB.*/ttyUSB$index/g" > /etc/ppp/peers/$script$index.tmp`
+			pppd call $script$index.tmp
+		fi
+	fi
+}
+
+lastppp=0
+killall_fw_server
+last_trans=9
+last_buffer=0
+last_min=0
+last_max=0
+last_type=9
+last_host=0
+last_port=0
+
+rate_max=`grep rate_max= /etc/mg.conf|cut -d= -f2`
+if [ "$rate_max" == "" ]; then
+	rate_max="800"
+fi
+
+encaddr=`grep encaddr= /etc/mg.conf|cut -d= -f2`
+if [ "$encaddr" == "" ]; then
+	encaddr="192.168.240.12"
+fi
+
+encport=`cat /etc/mg.conf|grep encport=|cut -d= -f2`
+if [ "$encport" == "" ]; then
+	encport="6180";
+fi
+
+encoder_params $encaddr $encport 3 "enc0.vid_bitrate=${rate_max}K|"
+
+start_fw_server() {
+	f=`ps|grep "fw_server"|grep -v grep -c`                                                               
+	while [ $f == 0 ]; do                                                                
+		lport=`grep local_port= /etc/mg.conf|cut -d= -f2`
+		uuid=`gen_uuid`
+		
+		if [ ${last_type} = 1 ]; then
+			tcp=" -tcp -uuid $uuid"
+		else
+			tcp=" -uuid $uuid"
+		fi
+		. getParams
+		fsip=`ifconfig eth0|sed -n '2,1p'|cut -d: -f2|awk '{print $1}'`
+		fw_server -p $lport -d $last_port -host $last_host -l $fsip -buffer $last_buffer$tcp -mode $last_trans -min $last_min -max $last_max -http $encaddr & 
+		sleep 1
+		f=`ps|grep "fw_server"|grep -v grep -c`
+	done
+}
+
+start_fw_client() {
+	f=`ps|grep "fw_client $1 $2"|grep -v grep -c`	
+	while [ $f == 0 ]; do
+		f1=`ps|grep "fw_client $1"|grep -v grep -c`
+		if [ $f1 != 0 ]; then
+			pid=`ps|grep "fw_client $1"|grep -v grep|awk '{print $1}'`
+			kill -9 $pid	
+		fi
+		fw_client $1 $2 &
+		sleep 1
+		f=`ps|grep "fw_client $1 $2"|grep -v grep -c`
+	done
+}
+
+killall_fw_server() {
+	count=`ps|grep fw_server|grep -v grep -c`
+	while [ $count != 0 ]; do
+		pid=`ps|grep -m 1 fw_server|grep -v grep|awk '{print $1}'`
+		if [ "$pid" != "" ]; then
+			kill -9 $pid
+		fi
+		sleep 1
+		count=`ps|grep fw_server|grep -v grep -c`
+	done
+	killall_fw_client
+	lastrans=100
+}
+
+
+
+killall_fw_client() {
+	f=`ps|grep "fw_client"|grep -v grep -c`
+	while [ $f != 0 ]; do
+		killall fw_client
+		sleep 1
+		f=`ps|grep "fw_client"|grep -v grep -c`
+	done	
+}
+
+lastrans=100
+
+while true; do
+	usb_modeswitch -c /etc/usb_modeswitch.setup > /dev/null
+	
+	if [ -f $ppp_conf ]; then
+		auto=`grep auto= $ppp_conf|cut -d= -f2`
+	else
+		auto="1"
+	fi
+	if [ "$auto" == "1" ]; then
+		ttyUSBcount=`find /sys/devices/pci0000:00|grep -n ":1.0/ttyUSB[0-9]*$" -c`
+		for i in $(seq $ttyUSBcount); do 
+			call_pppd_auto $i
+		done
+	else
+		for i in $(seq 7); do
+			call_pppd_manual $i
+		done
+	fi	
+
+	transmit=`grep transmit= /etc/mg.conf|cut -d= -f2`
+	
+	trans=`cat /etc/trans`
+	tcp=`grep tcp= /etc/mg.conf|cut -d= -f2`
+	buffer=`grep buffer= /etc/mg.conf|cut -d= -f2`
+	rate_min=`grep rate_min= /etc/mg.conf|cut -d= -f2`
+	host=`grep host= /etc/mg.conf|cut -d= -f2`
+	dport=`grep destination_port= /etc/mg.conf|cut -d= -f2`
+	
+	if [ "$rate_min" == "" ]; then
+		rate_min="500"
+	fi
+	
+	rate_max=`grep rate_max= /etc/mg.conf|cut -d= -f2`
+	
+	if [ "$rate_max" == "" ]; then
+		rate_max="800"
+	fi
+	
+	if [ "$last_trans" != "$trans" ] || [ "$tcp" != "$last_type" ] || [ "$buffer" != "$last_buffer" ] || [ "$rate_min" != "$last_min" ] || [ "$rate_max" != "$last_max" ] || [ "$host" != "$last_host" ] || [ "$dport" != "$last_port" ]; then
+		last_trans=$trans
+		last_type=$tcp
+		last_buffer=$buffer
+		last_min=$rate_min
+		last_max=$rate_max
+		last_host=$host
+		last_port=$dport
+		
+		killall_fw_server
+	fi
+	
+
+	if [ "$lastrans" != "$transmit" ]; then
+	
+		if [ $transmit == 3 ] || [ $transmit == 4 ]; then
+			if [ $transmit == 3 ]; then
+				if [ $lastrans == 30 ]; then
+					start_fw_server
+				else
+					killall_fw_server
+					killall_fw_client
+				fi
+			fi
+			if [ $transmit == 4 ]; then
+			 	if [ $lastrans == 40 ]; then
+			 		start_fw_server
+			 	else
+					killall_fw_server
+					killall_fw_client
+				fi
+			fi
+			rt=`route|grep default|grep ppp -c`
+			if [ $rt == 0 ]; then
+				route delete default
+				ppp=`ifconfig|grep ppp|awk '{print $1}'|sed -n 1p`
+				route add default $ppp	
+			fi			
+		else
+			killall_fw_server
+			killall_fw_client
+			route delete default
+		fi
+
+		case $transmit in
+		0)
+			#ethernet	
+			lastppp=0
+			gateway=`cat /etc/netconf|sed -n 3p`
+			if [ "$gateway" != "" ]; then
+				result=`route add default gw $gateway eth1`
+			fi
+			killall_fw_client
+			ip=`cat /etc/netconf |sed -n 1p`
+			start_fw_server
+			start_fw_client eth1 $ip
+			lastrans=0
+		;;
+		1)
+			#wifi
+			lastppp=0
+			waitwifi=true
+			while $waitwifi; do
+				ra0=`ifconfig|grep ra0 -c`
+				if [ $ra0 == 0 ]; then
+					ifconfig ra0 up
+				else
+					essid=`cat /etc/wificonf/current`
+					if [ "$essid" != "" ]; then
+						result=`iwlist ra0 scanning|grep $essid -c`
+						if [ $result != 0 ]; then
+							AuthMode=`grep AuthMode= /etc/wificonf/$essid|cut -d= -f2`
+							EncrypType=`grep EncrypType= /etc/wificonf/$essid|cut -d= -f2`
+							ip=`grep ip= /etc/wificonf/$essid|cut -d= -f2`
+							mask=`grep mask= /etc/wificonf/$essid|cut -d= -f2`
+							passwd=`grep passwd= /etc/wificonf/$essid|cut -d= -f2`
+							gateway=`grep gateway= /etc/wificonf/$essid|cut -d= -f2`
+							
+							iwpriv ra0 set NetworkType=Infra
+							result=`iwpriv ra0 set AuthMode=$AuthMode`
+							result=`iwpriv ra0 set EncrypType=$EncrypType`
+							result=`iwpriv ra0 set SSID="$essid"`
+							if [ $EncrypType == 'WEP' ]; then
+								iwpriv ra0 set DefaultKeyID=1
+								result=`iwpriv ra0 set Key1="$passwd"`
+							fi
+							if [ $EncrypType == 'WPAPSK' ] || [ $EncrypType == 'AES' ] || [ $EncrypType == 'TKIP' ]; then
+								result=`iwpriv ra0 set WPAPSK="$passwd"`
+							fi
+							result=`ifconfig ra0 inet $ip netmask $mask`
+							if [ "$gateway" != "" ]; then
+								result=`route add default gw $gateway ra0`
+							fi
+							killall_fw_client
+							start_fw_server
+							start_fw_client ra0 $ip
+							waitwifi=false
+						fi
+					fi	
+				fi
+				sleep 1
+			done
+			lastrans=1
+		;;
+		2)
+			#wimax
+			lastppp=0
+			route add default eth2
+			killall_fw_client
+			start_fw_server
+			start_fw_client eth2 $ip
+			lastrans=2
+		;;
+		3)
+			#3g single
+			lastppp=0
+			ppp=`ifconfig|grep ppp -c`
+			if [ $ppp != 0 ]; then
+				ppp=`ifconfig|grep ppp|awk '{print $1}'|sed -n 1p`
+				ip=`ifconfig $ppp|sed -n '2,1p'|cut -d: -f2|awk '{print $1}'`
+				start_fw_server
+				start_fw_client $ppp $ip
+			else
+				killall_fw_server
+				killall_fw_client
+			fi
+			lastrans=30
+		;;
+		4)
+			#3g multiple
+			ppp=`ifconfig|grep ppp -c`
+			if [ ${ppp} != ${lastppp} ]; then
+				lastppp=$ppp
+				killall_fw_server
+				killall_fw_client
+			
+				if [ $ppp != 0 ]; then
+					start_fw_server
+				fi
+
+				pppcount=`ifconfig|grep ppp -c`	
+				for i in $(seq $pppcount); do
+					ppp=`ifconfig|grep ppp|awk '{print $1}'|sed -n ${i}p`	
+					ip=`ifconfig $ppp|sed -n '2,1p'|cut -d: -f2|awk '{print $1}'`
+					start_fw_client $ppp $ip
+				done
+			fi
+			lastrans=40
+		;;
+		5)
+			#4g
+			killall_fw_client
+			killall_fw_server
+			lastrans=5
+			lastppp=0
+			while [ $transmit == 5 ]; do
+				transmit=`grep transmit= /etc/mg.conf|cut -d= -f2`
+				inserted=`find /sys/devices/pci0000:00|grep ttyUSB0 -c|grep -v grep`
+				active=`ifconfig ppp0|grep addr:192.168. -c`
+				if [ $inserted != 0 ]; then
+					if [ $active == 0 ]; then
+						killall pppd
+						ifconfig usb0 up
+						echo AT+CGACT=0,1 > /dev/ttyUSB0
+						sleep 1
+						echo AT+CGDCONT=1,"IP",,, > /dev/ttyUSB0
+						sleep 3
+						echo AT+CGACT=1,1 > /dev/ttyUSB0
+						sleep 3 
+						pppd call dsl-provider
+						sleep 3
+					#else
+						#ip=`ifconfig ppp0|sed -n '2,1p'|cut -d: -f2|awk '{print $1}'`
+						#start_fw_server
+						#start_fw_client 'ppp0' $ip
+					fi
+				else
+					killall pppd
+				fi
+				sleep 3
+			done
+			killall pppd
+		;;
+		esac
+	else
+		start_fw_server
+	fi	
+	sleep 1
+done

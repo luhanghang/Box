@@ -1,0 +1,31 @@
+#!/bin/sh
+probe() {
+	if [ -f "/tmp/p$1" ]; then
+		p=`cat /tmp/p$1`
+		if [ $p == fce/d0cf/0 ]; then
+			`echo 3 > /sys/bus/usb/devices/$1/bConfigurationValue`
+		fi
+		if [ $p == 19d2/26/0 ] || [ $p == 19d2/94/0 ]; then
+			echo "19d2 0094" > /sys/bus/usb-serial/drivers/option1/new_id
+			usb_modeswitch -v 0x19d2 -p 0x0026 -V 0x19d2 -P 0x0094 -M "5553424312345678000000000000061b000000020000000000000000000000"	
+		fi
+		if [ $p == 12d1/1446/0 ]; then
+			usb_modeswitch -c /etc/usb_modeswitch.setup
+		fi
+		if [ $p == 19d2/2000/0 ]; then
+			echo "19d2 0031" > /sys/bus/usb-serial/drivers/option1/new_id
+			usb_modeswitch -v 0x19d2 -p 0x2000 -V 0x19d2 -P 0x0031 -M "55534243123456782000000080000c85010101180101010101000000000000"
+		fi
+		if [ $p == 19d2/fff5/0 ]; then
+			echo "19d2 fff1" > /sys/bus/usb-serial/drivers/option1/new_id
+			usb_modeswitch -v 0x19d2 -p 0xfff5 -V 0x19d2 -P 0xfff1 -M "5553424312345678c00000008000069f030000000000000000000000000000"
+		fi
+		`rm /tmp/p$1`
+	fi
+}
+
+while true; do
+	probe "1-1"
+	probe "1-3"
+	sleep 1
+done

@@ -1,0 +1,51 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+	<link href="css/stylesheet.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="javascripts/jquery.js"></script>
+	<script type="text/javascript" src="javascripts/prototype.js"></script>
+	<script type="text/javascript" src="javascripts/changepass.js"></script>
+	<title></title>
+</head>
+<body>
+	<div>路由器密码</div>
+	<hr size="1">
+	<form method="post" action="javascript:void(0)" onsubmit="do_submit()">
+	<table width="100%">
+		<tr>
+			<td class="label">用户名</td>
+			<td>
+				admin
+			</td>
+		</tr
+		<tr>
+			<td class="label">请输入当前密码</td>
+			<td>
+				<input type="password" name="curpass" id="curpass">
+			</td>
+		</tr>
+		<tr>
+			<td class="label">请输入新密码</td>
+			<td>
+				<input type="password" name="newpass" id="newpass"> <font color="green">密码由英文字母和数字组成</font>
+			</td>
+		</tr>
+		<tr>
+			<td class="label">再次输入新密码</td>
+			<td>
+				<input type="password" name="confirmpass" id="confirmpass">
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td><div id="error" style="color:red"></div></td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<input type="submit" value="更改密码">
+			</td>
+		</tr>
+	</table>
+	</form>
+</body>
+</html>

@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2011-11-09 11:11:08.866.dproj,C:\Documents and Settings\Lu Hang\My Documents\RAD Studio\Projects\Project1.dproj=C:\Documents and Settings\Lu Hang\My Documents\RAD Studio\Projects\FindBox.dproj</Transaction>
+    <Transaction>2011-11-09 11:11:35.304.pas,C:\Documents and Settings\Lu Hang\My Documents\RAD Studio\Projects\Unit1.pas=Z:\Dropbox\Public\4g\find\Unit1.pas</Transaction>
+    <Transaction>2011-11-09 11:11:35.304.dfm,C:\Documents and Settings\Lu Hang\My Documents\RAD Studio\Projects\Unit1.dfm=Z:\Dropbox\Public\4g\find\Unit1.dfm</Transaction>
+    <Transaction>2011-11-09 11:12:19.349.dproj,C:\Documents and Settings\Lu Hang\My Documents\RAD Studio\Projects\FindBox.dproj=Z:\Dropbox\Public\4g\find\FindBox.dproj</Transaction>
+  </Transactions>
+</BorlandProject>

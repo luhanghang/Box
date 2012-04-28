@@ -1,0 +1,18 @@
+#!/bin/sh
+encoder_params 127.0.0.1 6180 3 "enc0.rec_loc=2|"
+while true; do
+	result=`btnstate`
+	if [ "X$result" == "X1" ]; then
+		state=`encoder_params 127.0.0.1 6180 2 "enc0.rec_start|"`
+		if [ "$state" == "enc0.rec_start=1" ]; then
+			echo "stop"
+			value=0	
+		else
+			echo "start"
+			value=1
+		fi	
+		encoder_params 127.0.0.1 6180 3 "enc0.rec_start=$value|"
+		echo $value > /sys/class/native/gpio004/control
+	fi	
+	usleep 500000
+done

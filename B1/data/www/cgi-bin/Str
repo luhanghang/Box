@@ -1,0 +1,6 @@
+#!/bin/sh
+if [ $2 == 1 ]; then
+	echo $1
+else
+	echo `cat ../strings|grep "^$1:"|cut -d: -f$2`
+fi

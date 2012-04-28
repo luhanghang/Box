@@ -1,0 +1,10 @@
+#!/bin/sh
+i=0
+echo "#!/bin/sh">set_strings
+while read line
+do
+	i=$(expr $i '+' 1)
+	l1=`echo $line|cut -d: -f3`
+	echo "export s$i=\"$l1\"" >> set_strings
+	
+done < strings	

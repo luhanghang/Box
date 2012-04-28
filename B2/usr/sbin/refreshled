@@ -1,0 +1,12 @@
+3gled -p /dev/ttyAM1 -c 0 
+3gled -p /dev/ttyAM1 -c 2
+while true; do
+	#pid=`ps|grep /usr/sbin/led|grep -v grep|awk '{print $1}'`
+	#while [ ! -z $pid ]; do
+	#	`kill -9 $pid`
+	#	sleep 1
+	#	pid=`ps|grep /usr/sbin/led|grep -v grep|awk '{print $1}'`
+	#done		
+	led
+	sleep 3
+done

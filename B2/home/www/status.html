@@ -1,0 +1,223 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+	<link href="css/stylesheet.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="javascripts/jquery.js"></script>
+	<script type="text/javascript" src="javascripts/prototype.js"></script>
+	<script type="text/javascript" src="javascripts/status.js"></script>
+	<title></title>
+</head>
+<body>
+	<div>系统状态</div>
+	<hr size="1">
+	<div>
+		<div>
+			<div>
+				LAN信息
+			</div>
+			<hr size="1">
+			<table cellpadding="0" cellspacing="0" width="100%">
+				<tr>
+					<td class="label">
+						MAC地址
+					</td>
+					<td class="value">
+						<div id="eth0_mac"></div>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						IP地址
+					</td>
+					<td class="value">
+						<div id="eth0_ip"></div>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						子网掩码
+					</td>
+					<td class="value">
+						<div id="eth0_mask"></div>	
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						流量
+					</td>
+					<td class="value">
+						已接收 <span id="eth0_rx">0</span> 个封包	
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						&nbsp;
+					</td>
+					<td class="value">
+						已发送 <span id="eth0_tx">0</span> 个封包	
+					</td>
+				</tr>
+			</table>
+		</div>
+		<hr size="1">
+		<div>
+			<div>
+				WAN信息
+			</div>
+			<hr size="1">
+			<div>
+				ppp0
+			</div>
+			<hr size="1">
+			<table cellpadding="0" cellspacing="0" width="100%">
+				<tr>
+					<td class="label">
+						信号强度
+					</td>
+					<td class="value">
+						<img src="/images/level0.gif" border="0" id="img_csq0">
+						<span id="csq0" style="margin-left:5px"></span>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						IP地址
+					</td>
+					<td class="value">
+						<div id="ppp0_ip"></div>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						子网掩码
+					</td>
+					<td class="value">
+						<div id="ppp0_mask"></div>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						P-t-P地址
+					</td>
+					<td class="value">
+						<div id="ppp0_ptp"></div>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						联机状态
+					</td>
+					<td class="value">
+						<div id="ppp0_status"></div>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						流量
+					</td>
+					<td class="value">
+						已接收 <span id="ppp0_rx">0</span>	
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						&nbsp;
+					</td>
+					<td class="value">
+						已发送 <span id="ppp0_tx">0</span>
+					</td>
+				</tr>
+			</table>
+			<hr size="1">
+			<div>
+				ppp1
+			</div>
+			<hr size="1">
+			<table cellpadding="0" cellspacing="0" width="100%">
+				<tr>
+					<td class="label">
+						信号强度
+					</td>
+					<td class="value">
+						<img src="/images/level0.gif" border="0" id="img_csq1">
+						<span id="csq1" style="margin-left:5px"></span>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						IP地址
+					</td>
+					<td class="value">
+						<div id="ppp1_ip"></div>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						子网掩码
+					</td>
+					<td class="value">
+						<div id="ppp1_mask"></div>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						P-t-P地址
+					</td>
+					<td class="value">
+						<div id="ppp1_ptp"></div>
+					</td>
+				</tr>
+
+				<tr>
+					<td class="label">
+						联机状态
+					</td>
+					<td class="value">
+						<div id="ppp1_status"></div>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						流量
+					</td>
+					<td class="value">
+						已接收 <span id="ppp1_rx">0</span>
+					</td>
+				</tr>
+				<tr>
+					<td class="label">
+						&nbsp;
+					</td>
+					<td class="value">
+						已发送 <span id="ppp1_tx">0</span>
+					</td>
+				</tr>
+			</table>
+			<hr size="1">
+			<table cellpadding="0" cellspacing="0" width="100%">
+				<tr>
+					<td class="label">
+						域名服务器
+					</td>
+					<td class="value">
+						<div id="dns"></div>
+					</td>
+				</tr>
+			</table>
+			<hr size="1">
+			<table cellpadding="0" cellspacing="0" width="100%">
+				<tr>
+					<td class="label">
+						传输速率
+					</td>
+					<td class="value">
+						<span id="speed"></span>
+					</td>
+				</tr>
+			</table>	
+		</div>
+		<div style="margin-top:10px"><input type="button" value="刷新" onclick="read()"></div>
+	</div>
+</body>
+</html>

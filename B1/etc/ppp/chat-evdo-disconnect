@@ -1,0 +1,8 @@
+ABORT "BUSY"
+ABORT "ERROR"
+ABORT "NO DIALTONE"
+SAY "\n Sending break to the modem \n"
+" "\K"
+" "+++ATH"
+SAY "\nGooday\n"
+

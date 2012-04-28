@@ -1,0 +1,95 @@
+#!/bin/sh
+ppp_conf="/etc/ppp/setup.cfg"
+
+call_pppd_manual() {
+	script=`grep standard= $ppp_conf|cut -d= -f2`
+	if [ "$script" != "" ]; then
+		pppd=`ps|egrep "pppd call ${script}.current"|grep -v "grep" -c`
+		if [ $pppd == 0 ]; then
+			sn=`grep service_number= $ppp_conf|cut -d= -f2`
+			apn=`grep apn= $ppp_conf|cut -d= -f2`
+			username=`grep username= $ppp_conf|cut -d= -f2`
+			passwd=`grep password= $ppp_conf|cut -d= -f2`
+			case $script in
+			'wcdma')
+				sed -i "s/ATDT.*/ATDT$sn\"/g" /etc/ppp/chat-${script}.current
+			;;
+			'evdo')
+				sed -i "s/ATD.*/ATD$sn/g" /etc/ppp/chat-${script}.current
+			;;
+			esac
+			sed -i "s/\"IP\",\".*\",,0,0/\"IP\",\"$apn\",,0,0/g" /etc/ppp/chat-${script}.current
+			sed -i "s/^user \".*\"/user \"$username\"/g" /etc/ppp/peers/${script}.current
+			sed -i "s/^password \".*\"/password \"$passwd\"/g" /etc/ppp/peers/${script}.current
+			sed -i "s/ttyUSB.*/ttyUSB0/g" /etc/ppp/peers/${script}.current
+			route delete default
+			pppd call ${script}.current
+		fi
+	fi
+}
+
+call_pppd_auto() {
+	pppd=`ps|egrep "pppd call wcdma.tmp|pppd call evdo.tmp"|grep -v "grep" -c`
+	if [ $pppd == 0 ]; then
+		imsi=`/usr/sbin/readIMSI -p /dev/ttyUSB2`
+		if [ "$imsi" == "" ]; then
+			imsi=`/usr/sbin/readIMSI -p /dev/ttyUSB3`
+		fi
+		opindex=`echo $imsi|cut -c5-5`
+		script='wcdma'
+		if [ "$opindex" == '1' ] || [ "$opindex" == '3' ]; then
+			case $opindex in
+		        '1')
+		        	script='wcdma'
+		        ;;
+		        '3')
+		        	script='evdo'
+		        ;;
+		        esac
+		fi
+		if [ "$script" != "" ]; then
+			pppd=`cat /etc/ppp/peers/$script|sed "s/ttyUSB.*/ttyUSB0/g" > /etc/ppp/peers/${script}.tmp`
+			route delete default
+			pppd call ${script}.tmp
+		fi
+	fi
+}
+
+if [ ! -f /proc/bus/usb/devices ]; then
+	mount -t usbfs none /proc/bus/usb
+fi
+
+insert=`grep HUAWEI /proc/bus/usb/devices -c`
+if [ $insert != 0 ]; then	
+	option=`lsmod|grep option -c`
+	if [ $option == 0 ]; then
+		modprobe option
+	fi
+	if [ ! -c "/dev/ppp" ]; then
+		mknod /dev/ppp c 108 0
+	fi
+	if [ ! -c "/dev/ppp" ]; then
+		mknod /dev/ppp c 108 0
+	fi
+	ppp=0
+	while [ $ppp == 0  ]; do
+		if [ -d "/sys/class/tty/ttyUSB0" ]; then
+			if [ -f $ppp_conf ]; then
+				auto=`grep auto= $ppp_conf|cut -d= -f2`
+			else
+				auto="1"
+			fi
+			if [ "$auto" == "1" ]; then
+				call_pppd_auto
+			else
+				call_pppd_manual
+			fi	
+		else
+			usb_modeswitch -c /etc/usb_modeswitch.setup > /dev/null
+		fi
+		sleep 1
+		ppp=`ifconfig|grep ppp0 -c`
+	done
+	
+	start_fwroute
+fi

@@ -1,0 +1,93 @@
+#!/bin/sh
+speedin=`fwstate|awk -F"," '{print "IN:"$4}'|tr "(in)" " "`
+speedout=`fwstate|awk -F"," '{print "OUT:"$5}'|tr "(out)" " "`
+csq0_l='65%'
+csq1_l='65%'
+
+csq0='N/A'
+	path="/sys/devices/platform/ep93xx-ohci/usb1/1-1"
+	card0=`find $path|grep ttyUSB|head -n1`
+	if [ -n "$card0" ]; then
+		l=`echo "$card0"|awk '{print length($0)}'`                                                                                                                                                
+		min=`echo "$card0"|cut -c$l-$l`
+		offset=2                                  
+		product=`cat /tmp/product1-1`             
+		dial_conf=`grep "$product" /etc/dial_conf`
+		if [ -n "${product}" ] && [ -n "${dial_conf}" ]; then
+			offset=`echo $dial_conf|awk '{print $5}'`
+		fi 
+		min=$(expr $min '+' $offset)
+		csq0=`3gstate -p /dev/ttyUSB$min|cut -d, -f1|awk '{print $2}'`
+		if [ -z $csq0 ]; then
+			csq0=$csq0_l
+		else
+			if [ $csq0 == 99 ]; then
+				csq0='NS'
+			else
+				csq0=$(expr $csq0 '*' 100 '/' 32)
+				csq0="$csq0%"
+				csq0_l=$csq0
+			fi
+		fi
+	fi
+
+csq1='N/A'
+	path="/sys/devices/platform/ep93xx-ohci/usb1/1-3"
+	card1=`find $path|grep ttyUSB|head -n1`
+	if [ -n "$card1" ]; then
+		l=`echo "$card1"|awk '{print length($0)}'`                                                                                                                                                
+		min=`echo "$card1"|cut -c$l-$l`
+		offset=2                                  
+		product=`cat /tmp/product1-3`             
+		dial_conf=`grep "$product" /etc/dial_conf`
+		if [ -n "${product}" ] && [ -n "${dial_conf}" ]; then
+			offset=`echo $dial_conf|awk '{print $5}'`
+		fi 
+		min=$(expr $min '+' $offset)
+		csq1=`3gstate -p /dev/ttyUSB$min|cut -d, -f1|awk '{print $2}'`
+		if [ -z $csq1 ]; then
+			csq1=$csq1_l
+		else
+			if [ $csq1 == 99 ]; then
+				csq1='NS'
+			else
+				csq1=$(expr $csq1 '*' 100 '/' 32)
+				csq1="$csq1%"
+				csq1_l=$csq1
+			fi
+		fi
+	fi
+
+cmd="3gled -p /dev/ttyAM1 -f 185"
+
+showled() {
+	msg=`printf "%-21.21s" "$1"`
+	`$cmd -s "$msg" -l $2`
+	#echo "$msg"
+}
+
+showled "CARD1:$csq0 CARD2:$csq1" 0
+
+status=""
+ppp0=`ifconfig|grep ppp0 -c`
+if [ ${ppp0} = 1 ]; then
+	status="PPP0:UP"
+else 
+	status="PPP0:DOWN"
+fi
+
+ppp1=`ifconfig|grep ppp1 -c`
+if [ ${ppp1} = 1 ]; then
+	status="$status PPP1:UP"
+else
+	status="$status PPP1:DOWN"
+fi
+
+3gled -p /dev/ttyAM1 -c 2
+showled "$status" 1
+showled "$speedin" 2
+showled "$speedout" 3
+
+host=`cat /etc/mg.conf|grep host=|cut -d= -f2`
+dport=`cat /etc/mg.conf|grep destination_port=|cut -d= -f2`
+showled "$host:$dport" 4

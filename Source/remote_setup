@@ -1,0 +1,52 @@
+#!/bin/sh
+trans=`cat /etc/trans`
+frame_size=`cat /etc/encoder/conf_2|awk '{print $1}'`
+if [ "$frame_size" == "2" ]; then
+	current_frame_size=1
+else
+	current_frame_size=2
+fi
+buffer=`grep buffer= /etc/mg.conf|cut -d= -f2`
+rate=`cat /etc/encoder/conf_2|awk '{print $2}'`
+
+if [ $# == 0 ]; then
+	echo $trans $current_frame_size $buffer $rate
+	exit
+fi
+
+if [ "$trans" != "$1" ]; then
+	echo $1 > /etc/trans
+fi
+
+fs=0
+if [ "$2" == "1" ]; then
+	new_frame_size=2
+else
+	new_frame_size=5
+fi
+if [ "$frame_size" != "$new_frame_size" ]; then
+	fs=1
+fi
+
+host=`grep host= /etc/mg.conf`
+local_port=`grep local_port= /etc/mg.conf`
+destination_port=`grep destination_port= /etc/mg.conf`
+tcp=`grep tcp= /etc/mg.conf`
+if [ "$3" != "$buffer" ]; then
+	echo $host > /etc/mg.conf
+	echo $local_port >> /etc/mg.conf
+	echo $destination_port >> /etc/mg.conf
+	echo $tcp >> /etc/mg.conf
+	echo buffer=$3 >> /etc/mg.conf
+fi
+
+r=0
+if [ "$4" != "$rate" ]; then
+	r=1
+fi
+
+if [ "$fs" == "1" ] || [ "$r" == "1" ]; then
+	echo $new_frame_size $4 25 25 > /etc/encoder/conf_2
+	login=`cat /etc/httpd.conf|awk -F":" '{print $2":"$3}'`
+	`curl -u $login -d "index=1&frame_size=$new_frame_size&bitrate=$4&key_frame=25&frame_rate=25&flag=remote" http://localhost/cgi-bin/saveencoder.cgi`
+fi

@@ -1,0 +1,49 @@
+#!/bin/sh
+/bin/mount -a
+# below getting rid of ram being mounted ro
+#/bin/mount -o remount / 
+#
+# The following is for dhcp
+#
+#
+# Instead, if you want static IP address
+#
+mount -t usbfs usbfs /proc/bus/usb
+ip1=`sed -n 1p /etc/netconf`
+mask1=`sed -n 2p /etc/netconf`
+ifconfig eth0 inet 192.168.240.1 netmask 255.255.255.0 up
+`ifconfig eth1 inet $ip1 netmask $mask1 up`
+echo 1 > /proc/sys/net/ipv4/ip_forward
+iptables -A POSTROUTING -t nat -o ppp0 -j MASQUERADE
+iptables -A POSTROUTING -t nat -o ppp1 -j MASQUERADE
+iptables -A POSTROUTING -t nat -o ppp2 -j MASQUERADE
+iptables -A POSTROUTING -t nat -o ppp3 -j MASQUERADE
+iptables -A POSTROUTING -t nat -o ppp4 -j MASQUERADE
+iptables -A POSTROUTING -t nat -o ppp5 -j MASQUERADE
+iptables -A POSTROUTING -t nat -o ppp6 -j MASQUERADE
+iptables -A POSTROUTING -t nat -o ra0 -j MASQUERADE
+iptables -A POSTROUTING -t nat -o eth1 -j MASQUERADE
+iptables -A POSTROUTING -t nat -o eth2 -j MASQUERADE
+route add -net 255.255.255.255 netmask 255.255.255.255 eth1
+modprobe option
+modprobe usbserial
+modprobe usbnet
+modprobe usbcom
+modprobe usbeth
+modprobe rt3370sta
+modprobe rtnet3370sta
+modprobe pppoe
+/sbin/sshd
+httpd -h /home/www
+/usr/sbin/echo_ip &
+if [ -f "/pending" ]; then
+	cp /etc/mg.conf /backup/etc
+	cp /etc/netconf /backup/etc
+	cp /etc/httpd.conf /backup/etc
+	cp -R /etc/ppp /backup/etc
+	cp -R /etc/wificonf /backup/etc
+	cp -R /backup/* /
+	rm -rf /backup
+	rm -f /pending
+fi
+/usr/sbin/dial.3g

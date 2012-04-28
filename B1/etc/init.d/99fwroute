@@ -1,0 +1,15 @@
+#!/bin/sh
+if [ -f "/data/pending" ]; then
+	cp /etc/mg.conf /data/backup/etc
+        cp -R /etc/ppp /data/backup/etc
+        cp -R /etc/wificonf /backup/etc
+        cp -R /data/backup/* /
+        rm -rf /data/backup
+        rm -f /data/pending
+fi
+         
+httpd -h /data/www -p 8000
+detect_wifi &
+detect_3g &
+#start_fwroute &
+recordd &
