@@ -68,14 +68,16 @@ int main(int argc, char *argv[])
     if (n < 0) 
          error("ERROR reading from socket");
     printf("%s",buffer+6);
-    if (action == 3 && reactive == 1) {
+    if (action == 3) {
     	bzero(buffer,256);
 		buffer[1] = 4;
 		buffer[3] = 2;
 		buffer[5] = 4;
 		n = write(sockfd,buffer,6);
-		buffer[5] = 7;
-		n = write(sockfd,buffer,6);
+		if(reactive == 1) {
+			buffer[5] = 7;
+			n = write(sockfd,buffer,6);
+		}
     }
     close(sockfd);
 
