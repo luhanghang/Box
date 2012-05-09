@@ -67,7 +67,6 @@ call_pppd_auto() {
 }
 
 lastppp=0
-killall_fw_server
 last_trans=9
 last_buffer=0
 last_min=0
@@ -104,9 +103,8 @@ start_fw_server() {
 		else
 			tcp=" -uuid $uuid"
 		fi
-		. getParams
-		fsip=`ifconfig eth0|sed -n '2,1p'|cut -d: -f2|awk '{print $1}'`
-		fw_server -p $lport -d $last_port -host $last_host -l $fsip -buffer $last_buffer$tcp -mode $last_trans -min $last_min -max $last_max -http $encaddr & 
+		#. getParams
+		fw_server -p $lport -d $last_port -host $last_host -buffer $last_buffer$tcp -mode $last_trans -min $last_min -max $last_max -http $encaddr & 
 		sleep 1
 		f=`ps|grep "fw_server"|grep -v grep -c`
 	done

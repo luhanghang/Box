@@ -1,7 +1,7 @@
 #!/bin/sh
 encaddr='192.168.240.12'
 encport=6180
-o_ip=`cat /etc/encoder/conf|awk '{print $1}`
+o_ip=`cat /etc/encoder/conf|awk '{print $1}'`
 
 do_save() {
 	#if [ -z $session ]; then
@@ -74,7 +74,7 @@ case $index in
 			killall fw_client
 			killall fw_server
 			#if [ "$t_method" == "4" ]; then
-				result=`/usr/sbin/encoder_params $encaddr $encport 3 "enc0.stream_url=rtp://192.168.240.1:$local_port|"`
+				/usr/sbin/encoder_params $encaddr $encport 3 "enc0.stream_url=|"
 			#else
 				#result=`/usr/sbin/encoder_params $encaddr $encport 3 "enc0.stream_url=rtp://$host:$destination_port|"`
 			#fi
