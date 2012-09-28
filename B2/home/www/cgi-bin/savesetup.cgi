@@ -119,5 +119,8 @@ case $index in
 	11)
 		echo "$trans" > /etc/trans
 	;;
+	12)
+		echo "$passive" > /etc/passive
+	;;
 esac
 echo "$error"

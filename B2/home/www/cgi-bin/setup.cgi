@@ -23,6 +23,11 @@ standard1=`cat /etc/ppp/standard|grep 1=|cut -d= -f2`
 tcp=`grep tcp= /etc/mg.conf|cut -d= -f2`
 uuid=`gen_uuid`
 trans=`cat /etc/trans`
+passive=`cat /etc/passive`
+
+if [ "$passive" == "" ]; then
+	passive=0
+fi
 
 if [ "$rate_min" == "" ]; then
 	rate_min=500	
@@ -79,6 +84,7 @@ echo ""
     <script type="text/javascript" src="/javascripts/setup.js"></script>
     <script type="text/javascript">
     	var trans = $trans;
+    	var passive = $passive;
     </script>
     <title></title>
 </head>
@@ -89,6 +95,16 @@ echo ""
     <div>$s2</div>
     <hr size="1">
 	$s86 <img id="switch_trans" src="/images/switch_$trans.png" style="vertical-align:-5px;cursor:pointer" onclick="toggle_trans('$s28')"/> $s85
+	&nbsp;
+	&nbsp;
+	&nbsp;
+	&nbsp;
+	&nbsp;
+	&nbsp;
+	&nbsp;
+	&nbsp;
+	&nbsp;
+	$s125 <img id="switch_passive" src="/images/switch_$passive.png" style="vertical-align:-5px;cursor:pointer" onclick="toggle_passive('$s28')"/> $s124
     <hr size="1">
     <div>
         <div>

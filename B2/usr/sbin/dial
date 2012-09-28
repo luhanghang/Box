@@ -102,7 +102,8 @@ start_fw_server() {
 		tcp=" -uuid $uuid"
 	fi
 	#. getParams
-	fw_server -p $lport -d $last_port -host $last_host -l $ip -buffer $last_buffer$tcp -mode $last_trans -min $last_min -max $last_max -http $encaddr & 
+	fw_server -p $lport -d $last_port -host $last_host -l $ip -buffer $last_buffer$tcp -mode $last_trans -min $last_min -max $last_max -http $encaddr -s $last_passive & 
+	echo "fw_server -p $lport -d $last_port -host $last_host -l $ip -buffer $last_buffer$tcp -mode $last_trans -min $last_min -max $last_max -http $encaddr -s $last_passive " > /tmp/fw_server 
 }
 
 kill_fw_server
@@ -113,6 +114,7 @@ last_max=0
 last_type=9
 last_host=0
 last_port=0
+last_passive=9
 
 rate_max=`grep rate_max= /etc/mg.conf|cut -d= -f2`
 if [ "$rate_max" == "" ]; then
@@ -138,12 +140,16 @@ while true; do
 	eth=`ifconfig|grep eth -c`
 
 	trans=`cat /etc/trans`
+	passive=`cat /etc/passive`
 	tcp=`grep tcp= /etc/mg.conf|cut -d= -f2`
 	buffer=`grep buffer= /etc/mg.conf|cut -d= -f2`
 	rate_min=`grep rate_min= /etc/mg.conf|cut -d= -f2`
 	host=`grep host= /etc/mg.conf|cut -d= -f2`
 	dport=`grep destination_port= /etc/mg.conf|cut -d= -f2`
 	
+	if [ "$passive" == "" ]; then
+		passive="0"
+	fi
 	if [ "$rate_min" == "" ]; then
 		rate_min="500"
 	fi
@@ -162,8 +168,9 @@ while true; do
 		fi
 	fi
 
-	if [ "$last_trans" != "$trans" ] || [ "$tcp" != "$last_type" ] || [ "$buffer" != "$last_buffer" ] || [ "$rate_min" != "$last_min" ] || [ "$rate_max" != "$last_max" ] || [ "$host" != "$last_host" ] || [ "$dport" != "$last_port" ]; then
+	if [ "$last_trans" != "$trans" ] || [ "$passive" != "$last_passive" ] || [ "$tcp" != "$last_type" ] || [ "$buffer" != "$last_buffer" ] || [ "$rate_min" != "$last_min" ] || [ "$rate_max" != "$last_max" ] || [ "$host" != "$last_host" ] || [ "$dport" != "$last_port" ]; then
 		last_trans=$trans
+		last_passive=$passive
 		last_type=$tcp
 		last_buffer=$buffer
 		last_min=$rate_min
