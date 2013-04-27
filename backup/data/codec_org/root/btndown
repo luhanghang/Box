@@ -1,0 +1,15 @@
+#!/bin/sh
+
+cd /root
+
+while true
+do
+	DIAL=`cat /proc/driver/gpio/native/05`
+	if [ $DIAL == "1" ]
+	then
+		sleep 1
+		continue
+	fi
+
+	./dial
+done

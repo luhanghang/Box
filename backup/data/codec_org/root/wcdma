@@ -1,0 +1,8 @@
+/dev/ttyUSB0
+460800
+connect 'chat -v -f wcdma-chat'
+noauth
+usepeerdns
+noipdefault
+defaultroute
+updetach

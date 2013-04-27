@@ -1,0 +1,12 @@
+#!/bin/sh
+# PPP monitor
+
+case "$1" in
+"start")
+	/root/pppmon &
+	;;
+
+"stop")
+	killall pppmon
+	;;
+esac

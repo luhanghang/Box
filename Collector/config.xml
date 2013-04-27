@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Config>
+	<Local>
+		<DataSource>
+			<dbserver>
+				<dsname>vehdb</dsname>
+				<username>hwits</username>
+				<passwd>hwits2009</passwd>
+			</dbserver>
+			<fileroot>e:/pic</fileroot>
+		</DataSource>
+	</Local>
+	<Remote>
+		<DataSource enabled="1" lastRecord="" ftp="true">
+			<name>保山市局_HW</name>
+			<dbserver>
+				<dsname>bshwits</dsname>
+				<username>hwits</username>
+				<passwd>hwits</passwd>
+			</dbserver>
+			<ftpserver>
+				<address>ftp://10.170.164.191</address>
+				<port>21</port>
+				<username>bskk</username>
+				<passwd>bskk</passwd>
+			</ftpserver>
+			<Table from="CLTXB_HW" to="CLTXB_HW" keyField="JLBH" ftpField="CLTXLJ" limit="500" interval="1">
+				<Field from="JLBH" to="JLBH" type="string"/>
+				<Field from="KKMC" to="KKMC" type="string"/>
+				<Field from="KKBH" to="KKBH" type="string"/>
+				<Field from="CDBH" to="CDBH" type="number"/>
+				<Field from="SBBH" to="SBBH" type="string"/>
+				<Field from="CLBH" to="CLBH" type="string"/>
+				<Field from="FXBH" to="FXBH" type="number"/>
+				<Field from="HPHM" to="HPHM" type="string"/>
+				<Field from="HPZL" to="HPZL" type="number"/>
+				<Field from="JGSJ" to="JGSJ" type="date"/>
+				<Field from="RKSJ" to="RKSJ" type="number" value="SYSDATE"/>
+				<Field from="JDZB" to="JDZB" type="number"/>
+				<Field from="WDZB" to="WDZB" type="number"/>
+				<Field from="HPYS" to="HPYS" type="string"/>
+				<Field from="CLLX" to="CLLX" type="string"/>
+				<Field from="CLTXLJ" to="CLTXLJ" type="string"/>
+				<Field from="SBKXD" to="SBKXD" type="string"/>
+				<Field from="BJXIH" to="BJXIH" type="string"/>
+				<Field from="ECSBHPHM" to="ECSBHPHM" type="string"/>
+				<Field from="ECSBHPYS" to="ECSBHPYS" type="string"/>
+				<Field from="ECSBKXD" to="ECSBKXD" type="string"/>
+				<Field from="JLBZ" to="JLBZ" type="number"/>
+				<Field from="HPTX" to="HPTX" type="blob"/>
+			</Table>
+		</DataSource>
+		<DataSource enabled="1" lastRecord="" ftp="true">
+			<name>保山市局_DH</name>
+			<dbserver>
+				<dsname>bshwits</dsname>
+				<username>hwits</username>
+				<passwd>hwits</passwd>
+			</dbserver>
+			<ftpserver>
+				<address>ftp://10.170.164.191</address>
+				<port>21</port>
+				<username>bskk</username>
+				<passwd>bskk</passwd>
+			</ftpserver>
+			<Table from="CLTXB_DH" to="CLTXB_HW" keyField="JLBH" ftpField="CLTXLJ" limit="500" interval="1">
+				<Field from="JLBH" to="JLBH" type="string"/>
+				<Field from="KKMC" to="KKMC" type="string"/>
+				<Field from="KKBH" to="KKBH" type="string"/>
+				<Field from="CDBH" to="CDBH" type="number"/>
+				<Field from="SBBH" to="SBBH" type="string"/>
+				<Field from="CLBH" to="CLBH" type="string"/>
+				<Field from="FXBH" to="FXBH" type="number"/>
+				<Field from="HPHM" to="HPHM" type="string"/>
+				<Field from="HPZL" to="HPZL" type="number"/>
+				<Field from="JGSJ" to="JGSJ" type="date"/>
+				<Field from="RKSJ" to="RKSJ" type="number" value="SYSDATE"/>
+				<Field from="JDZB" to="JDZB" type="number"/>
+				<Field from="WDZB" to="WDZB" type="number"/>
+				<Field from="HPYS" to="HPYS" type="string"/>
+				<Field from="CLLX" to="CLLX" type="string"/>
+				<Field from="CLTXLJ" to="CLTXLJ" type="string"/>
+				<Field from="SBKXD" to="SBKXD" type="string"/>
+				<Field from="BJXIH" to="BJXIH" type="string"/>
+				<Field from="ECSBHPHM" to="ECSBHPHM" type="string"/>
+				<Field from="ECSBHPYS" to="ECSBHPYS" type="string"/>
+				<Field from="ECSBKXD" to="ECSBKXD" type="string"/>
+				<Field from="JLBZ" to="JLBZ" type="number"/>
+				<Field from="HPTX" to="HPTX" type="blob"/>
+			</Table>
+		</DataSource>
+	</Remote>
+	<Misc>
+		<MaxLog>100</MaxLog>
+		<Polling>5</Polling>
+	</Misc>
+</Config>

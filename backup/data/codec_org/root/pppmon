@@ -1,0 +1,10 @@
+#!/bin/sh
+
+while true
+do
+	sleep 10
+	if ps | grep -q "\[pppd\]"
+	then
+		reboot
+	fi
+done

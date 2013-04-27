@@ -1,0 +1,15 @@
+connect 'chat -v -f cdma2000-chat'
+/dev/ttyUSB0
+921600
+modem
+crtscts
+defaultroute
+usehostname
+updetach
+user ctnet@mycdma.cn
+noipdefault
+noauth
+name wvdial
+usepeerdns
+idle 0
+nolock

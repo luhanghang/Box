@@ -1,0 +1,11 @@
+#!/bin/sh
+# Start dial script
+
+case "$1" in
+"start")
+	/root/dial -w 10 &
+	;;
+
+"stop")
+	;;
+esac

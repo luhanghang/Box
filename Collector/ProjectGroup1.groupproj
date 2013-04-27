@@ -1,0 +1,40 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{df62d9fc-9b8e-4667-a5cf-b6401dd3e182}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup />
+  <ItemGroup />
+  <ProjectExtensions>
+    <Borland.Personality>Default.Personality</Borland.Personality>
+    <Borland.ProjectType />
+    <BorlandProject>
+<BorlandProject xmlns=""><Default.Personality></Default.Personality></BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <Target Name="DataCollector">
+    <MSBuild Projects="DataCollector.dproj" Targets="" />
+  </Target>
+  <Target Name="DataCollector:Clean">
+    <MSBuild Projects="DataCollector.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="DataCollector:Make">
+    <MSBuild Projects="DataCollector.dproj" Targets="Make" />
+  </Target>
+  <Target Name="SDIAPP">
+    <MSBuild Projects="test\SDIAPP.dproj" Targets="" />
+  </Target>
+  <Target Name="SDIAPP:Clean">
+    <MSBuild Projects="test\SDIAPP.dproj" Targets="Clean" />
+  </Target>
+  <Target Name="SDIAPP:Make">
+    <MSBuild Projects="test\SDIAPP.dproj" Targets="Make" />
+  </Target>
+  <Target Name="Build">
+    <CallTarget Targets="DataCollector;SDIAPP" />
+  </Target>
+  <Target Name="Clean">
+    <CallTarget Targets="DataCollector:Clean;SDIAPP:Clean" />
+  </Target>
+  <Target Name="Make">
+    <CallTarget Targets="DataCollector:Make;SDIAPP:Make" />
+  </Target>
+</Project>

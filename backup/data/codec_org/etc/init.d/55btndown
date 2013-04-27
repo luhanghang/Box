@@ -1,0 +1,11 @@
+#!/bin/sh
+# Monitor reset button down
+
+case "$1" in
+"start")
+	/root/btndown &
+	;;
+
+"stop")
+	;;
+esac

@@ -1,0 +1,70 @@
+#!/bin/sh
+host=`cat /etc/mg.conf|grep host=|cut -d= -f2`
+destination_port=`cat /etc/mg.conf|grep destination_port=|cut -d= -f2`
+/usr/sbin/encoder_params 127.0.0.1 6180 3 "enc0.stream_url=rtp://$host:$destination_port|"
+
+if [ `lsmod|grep rt5370sta -c` == 0 ]; then
+	insmod /lib/modules/2.6.30.mobi.merlin-mg3500.custom/kernel/drivers/net/rt5370sta.ko
+fi
+if [ ! -f /proc/bus/usb/devices ]; then
+	mount -t usbfs none /proc/bus/usb
+fi
+
+insert=`grep "Vendor=148f ProdID=5370" /proc/bus/usb/devices -c`
+if [ -f "/etc/wificonf/recent" ] && [ $insert != 0 ]; then
+	ra0=`ifconfig|grep ra0 -c`
+	if [ $ra0 == 0 ]; then
+		ifconfig ra0 up
+	fi
+	use=0
+	while [ $use == 0 ]; do
+		essid=`cat /etc/wificonf/current`
+		if [ `iwlist ra0 scanning|grep $essid -c` == 0 ]; then
+			essid=""
+			while read line; do
+				if [ `iwlist ra0 scanning|grep $line -c` != 0 ]; then
+		       			essid=$line
+		               		break
+		       		fi
+			done < /etc/wificonf/recent
+		fi
+		
+		if [ "$essid" != "" ]; then 
+			AuthMode=`grep AuthMode= /etc/wificonf/$essid|cut -d= -f2`
+			EncrypType=`grep EncrypType= /etc/wificonf/$essid|cut -d= -f2`
+			passwd=`grep passwd= /etc/wificonf/$essid|cut -d= -f2`
+				
+			ip=`grep ip= /etc/wificonf/$essid|cut -d= -f2`
+			mask=`grep mask= /etc/wificonf/$essid|cut -d= -f2`
+			gateway=`grep gateway= /etc/wificonf/$essid|cut -d= -f2`
+			dhcp=`grep dhcp= /etc/wificonf/$essid|cut -d= -f2`
+							
+			iwpriv ra0 set NetworkType=Infra
+			iwpriv ra0 set AuthMode=$AuthMode
+			iwpriv ra0 set EncrypType=$EncrypType
+			iwpriv ra0 set SSID="$essid"
+			if [ $EncrypType == 'WEP' ]; then
+				iwpriv ra0 set DefaultKeyID=1
+				iwpriv ra0 set Key1="$passwd"
+			fi
+			if [ $EncrypType == 'WPAPSK' ] || [ $EncrypType == 'AES' ] || [ $EncrypType == 'TKIP' ]; then
+				iwpriv ra0 set WPAPSK="$passwd"
+			fi
+			route delete default
+			if [ "$dhcp" != "1" ]; then
+				ifconfig ra0 inet $ip netmask $mask
+				if [ "$gateway" != "" ]; then
+					route add default gw $gateway ra0
+				fi
+			else
+				if [ -f "/tmp/udhcpc.pid" ]; then
+					kill -9 `cat /tmp/udhcpc.pid`
+				fi
+				udhcpc -b -i ra0 -p /tmp/udhcpc.pid
+				ip=`grep ip= /var/lib/misc/udhcpd.leases|cut -d= -f2`
+			fi
+			use=`iwconfig ra0|grep "\"$essid\"" -c`
+		fi
+		sleep 1
+	done
+fi

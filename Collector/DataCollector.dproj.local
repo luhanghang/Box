@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2009/11/28 20:54:40.207.dproj,F:\Backup\My Documents\My Dropbox\Public\Collector\SDIAPP.dproj=F:\Backup\My Documents\My Dropbox\Public\Collector\DataCollector.dproj</Transaction>
+    <Transaction>2009/11/28 21:12:53.960.pas,F:\Backup\My Documents\My Dropbox\Public\Collector\Unit1.pas=F:\Backup\My Documents\My Dropbox\Public\Collector\FTPClient.pas</Transaction>
+    <Transaction>2009/11/30 12:47:46.541.pas,C:\Program Files\CodeGear\RAD Studio\5.0\Direct Oracle Access 411\Source\Oracle.pas=</Transaction>
+    <Transaction>2009/12/03 19:52:18.211.pas,F:\Backup\My Documents\My Dropbox\Public\Collector\Unit1.pas=F:\Backup\My Documents\My Dropbox\Public\Collector\DataPoint.pas</Transaction>
+    <Transaction>2009/12/03 19:52:18.211.dfm,F:\Backup\My Documents\My Dropbox\Public\Collector\Unit1.dfm=F:\Backup\My Documents\My Dropbox\Public\Collector\DataPoint.dfm</Transaction>
+  </Transactions>
+</BorlandProject>

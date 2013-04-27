@@ -1,0 +1,51 @@
+abort on (BUSY)
+abort on (ERROR)
+abort on (NO DIALTONE)
+
+ Sending break to the modem 
+expect ( )
+~^?}#@!}!}"} 
+ -- got it
+
+send (\K"^M)
+expect ( )
+}=}!}$}%(}"}&} 
+ -- got it
+
+send (+++ATH"^M)
+
+Gooday
+abort on (BUSY)
+abort on (ERROR)
+abort on (NO DIALTONE)
+
+ Sending break to the modem 
+expect ( )
+Killed
+abort on (BUSY)
+abort on (ERROR)
+abort on (NO DIALTONE)
+
+ Sending break to the modem 
+expect ( )
+~^?}#@!}!}"} 
+ -- got it
+
+send (\K"^M)
+expect ( )
+}=}!}$}%(}"}&} 
+ -- got it
+
+send (+++ATH"^M)
+
+Gooday
+abort on (BUSY)
+abort on (ERROR)
+abort on (NO DIALTONE)
+
+Sending break to the modem
+send (\K^M)
+send (+++ATH^M)
+
+Goodbay
+

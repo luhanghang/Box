@@ -1,0 +1,82 @@
+#!/bin/sh
+
+load_option()
+{
+	modprobe option
+	N=0
+	until [ -c /dev/ttyUSB0 ]
+	do
+		echo N = $N
+		sleep 5
+		N=`expr $N + 1`
+		if [ $N -ge 20 ]
+		then
+			exit
+		fi
+	done
+	PPPFILE=wcdma
+}
+
+load_ac580()
+{
+	modprobe sr_mod
+	sleep 5
+	if [ ! -b /dev/sr0 ]
+	then
+		exit 1
+	fi
+	eject /dev/sr0
+	sleep 8
+	modprobe usbserial vendor=0x19d2 product=0x0152
+	PPPFILE=cdma2002
+}
+
+if [ "X$1" == "X-w" ]
+then
+	shift
+	if [ "X$1" != "X" ]
+	then
+		sleep $1
+	fi
+fi
+
+echo "Dialup..."
+killall pppd
+
+if [ ! -f /proc/bus/usb/devices ]
+then
+	mount -t usbfs none /proc/bus/usb
+fi
+
+if grep -q "Vendor=12d1 ProdID=1001" /proc/bus/usb/devices
+then
+	echo "=> Option found"
+	load_option
+elif grep -q "Vendor=19d2 ProdID=0026" /proc/bus/usb/devices
+then
+	echo "=> AC580 found"
+	load_ac580
+elif grep -q "Vendor=19d2 ProdID=0152" /proc/bus/usb/devices
+then
+	echo "=> AC580 found"
+	modprobe usbserial vendor=0x19d2 product=0x0152
+	PPPFILE=cdma2002
+else
+	echo Unknown modem
+	exit
+fi
+
+route del default
+modprobe ppp_generic
+sleep 1
+cd /root
+# user specified username & password
+if [ -f /tmp/ppp_auth ]
+then
+	. /tmp/ppp_auth
+	if [ "X$PPP_USER" != "X" ]
+	then
+		PPPOPT="user $PPP_USER password $PPP_PASS"
+	fi
+fi
+pppd file $PPPFILE $PPPOPT
